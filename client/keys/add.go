@@ -88,7 +88,7 @@ func runAddCmdPrepare(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return RunAddCmd(clientCtx, cmd, args, buf)
+	return runAddCmd(clientCtx, cmd, args, buf)
 }
 
 /*
@@ -100,7 +100,7 @@ input
 output
 	- armor encrypted private key (saved to file)
 */
-func RunAddCmd(ctx client.Context, cmd *cobra.Command, args []string, inBuf *bufio.Reader) error {
+func runAddCmd(ctx client.Context, cmd *cobra.Command, args []string, inBuf *bufio.Reader) error {
 	var err error
 
 	name := args[0]
@@ -266,6 +266,13 @@ func RunAddCmd(ctx client.Context, cmd *cobra.Command, args []string, inBuf *buf
 	info, err := kb.NewAccount(name, mnemonic, bip39Passphrase, hdPath, algo)
 	if err != nil {
 		return err
+	}
+
+	if dryRun, _ := cmd.Flags().GetBool(flags.FlagDryRun); dryRun {
+		err = kb.Delete(name)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Recover key from seed passphrase
